@@ -4,48 +4,54 @@ import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'main.dart';
+
+
 // final Uri _url = Uri.parse('https://flutter.dev');
 
-void main() {
-  runApp(const MyApp());
-}
+// void main() {
+//   runApp(const MyApp());
+// }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
 
   
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      routes: {
-        // "/": (context) => MyHomePage(),
-        "/second":(context) => MyPage2(),
-        "/third":(context) => ThirdPage(),
-      },
-      initialRoute: "/third",
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Flutter Demo',
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//       ),
+//       routes: {
+//         // "/": (context) => MyHomePage(),
+//         "/second":(context) => MyPage2(),
+//         "/third":(context) => ThirdPage(),
+//       },
+//       initialRoute: "/third",
+//     );
+//   }
+// }
 
-class MyHomePage extends StatefulWidget {
+class GoAdverWeb extends StatefulWidget {
   int randomnumber;
-  MyHomePage(this.randomnumber);
+  GoAdverWeb(this.randomnumber);
   
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<GoAdverWeb> createState() => _GoAdverWebState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _GoAdverWebState extends State<GoAdverWeb> {
 
   List url_list=[Uri.parse('https://flutter.dev'),Uri.parse('https://www.flutterbeads.com/change-lock-device-orientation-portrait-landscape-flutter/')];
-  List photo=['images/sea.jfif','images/second.jfif'];
+  List photo=['photos/sea.jfif','photos/second.jfif'];
 
   void initState(){  
+    add_money();
     print("What i got: ${widget.randomnumber}");
     super.initState();
     SystemChrome.setPreferredOrientations([
@@ -58,6 +64,23 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!await launchUrl(url_list[widget.randomnumber])) {
       throw 'Could not launch ${url_list[widget.randomnumber]}';
     }
+  }
+
+  add_money()async{
+   DatabaseReference dbref= await FirebaseDatabase.instance.ref("Gambling_Users/").child(global_email);
+   int money_now=0;
+   final snap=await dbref.get();
+   if(snap.exists){
+      dynamic get=snap.value;
+      money_now=get["user_money"];
+      print("peep, money_now=${money_now}");
+    }
+    await dbref.update(
+        {
+          "user_money":money_now+3000
+        }
+    );
+    print("set done user money");
   }
 
 
@@ -95,14 +118,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class MyPage2 extends StatefulWidget {
-  const MyPage2({Key? key}) : super(key: key);
+class AdverVedioPayer extends StatefulWidget {
+  const AdverVedioPayer({Key? key}) : super(key: key);
 
   @override
-  State<MyPage2> createState() => MyPage2State();
+  State<AdverVedioPayer> createState() => AdverVedioPayerState();
 }
 
-class MyPage2State extends State<MyPage2> {
+class AdverVedioPayerState extends State<AdverVedioPayer> {
   late VideoPlayerController videoPlayerController;
   ChewieController? chewieController;
   int count=0;
@@ -129,7 +152,7 @@ class MyPage2State extends State<MyPage2> {
         count++;
         String ?resultData = await Navigator.push(context,
                  MaterialPageRoute(builder:(BuildContext context) {
-                    return MyHomePage(randomnumber) ; 
+                    return GoAdverWeb(randomnumber) ; 
                   }) 
                 );
                 if(resultData!=null){
@@ -207,20 +230,118 @@ class MyPage2State extends State<MyPage2> {
 
 
 
-class ThirdPage extends StatefulWidget{
+class jumpadverPage extends StatefulWidget{
   @override
-  State<ThirdPage> createState() => _ThirdPage();
+  State<jumpadverPage> createState() => _jumpadverPage();
 }
 
-class _ThirdPage extends State<ThirdPage>{
+class _jumpadverPage extends State<jumpadverPage>{
+
+  DateTime Last_Check_Time=DateTime.now();
+  int check_in_state=0;
+  int money_now=0;
+
+  Future<void> day_error(BuildContext context) {
+    return showDialog<void>(context:context,builder:(context) {
+      return AlertDialog(
+        title: Text("您今日已經簽到過了"),
+        content: Text("請到明日00:00再進行簽到"),
+        actions: [
+            ElevatedButton(
+            child: Text('取消', style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              Navigator.of(context).pop("cancel");
+            },
+          ),
+        ],
+      );
+    });
+  }
+
+  check_check_in_button()async{
+    // print("start check checkin");
+    DatabaseReference dbref= await FirebaseDatabase.instance.ref("Gambling_Users/").child(global_email);
+    await dbref.onValue.listen((event) {
+        dynamic get=event.snapshot.value;
+        String Last_Check_Time_String=get["last_check_in"].toString();
+        Last_Check_Time=DateTime.utc(int.parse(Last_Check_Time_String.substring(0, 4)),int.parse(Last_Check_Time_String.substring(4, 6)),int.parse(Last_Check_Time_String.substring(6, 8)),0,0,0);
+        Last_Check_Time = Last_Check_Time.add(Duration(days: 1));
+        // print("peep done,get the last check in time");
+        // print("Last_Check_Time=${Last_Check_Time}");
+        // print("Now Time: ${DateTime.now().add(Duration(hours:8))}");
+        if(DateTime.now().add(Duration(hours:8)).isAfter(Last_Check_Time)){
+          // print("You can check in now");
+          check_in_state=1;
+        }
+        // else check_in_state=0;
+    });
+    setState(() {
+      
+    });
+  }
+  
+
+  String Change_to_2(String number){
+    if(number.length==2){
+      return number;
+    }else return "0"+number;
+  }
+
   @override
   Widget build(BuildContext context) {
+    check_check_in_button();
       return Scaffold(
-          appBar: AppBar(title: Text("3"),),
+          // appBar: AppBar(title: Text("3"),),
           body: Center(
-            child: ElevatedButton(child: Text("Go forward"),onPressed: (){
-              Navigator.pushNamed(context, "/second");
-            },),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(child: Text("看廣告賺金幣"),onPressed: (){
+                  Navigator.pushNamed(context, "/Video_Page");
+                },),
+                ElevatedButton(child: Text("每日簽到"),onPressed: ()async{
+                  int money_now=0;
+                  if(check_in_state==1){
+                    DatabaseReference dbref= await FirebaseDatabase.instance.ref("Gambling_Users/").child(global_email);
+                    final snap=await dbref.get();
+                    if(snap.exists){
+                      dynamic get=snap.value;
+                      money_now=get["user_money"];
+                      print("peep, money_now=${money_now}");
+                    }
+                    // await dbref.onValue.listen((event) {
+                    //   dynamic get=event.snapshot.value;
+                    //   money_now=get["user_money"];
+                    //   print("peep, money_now=${money_now}");
+                    // });
+                    await dbref.update(
+                        {
+                          "user_money":money_now+5000
+                        }
+                    );
+                    print("set done user money");
+                    
+                    DatabaseReference dbref2= await FirebaseDatabase.instance.ref("Gambling_Users/").child(global_email);
+                    DateTime now_time=DateTime.now().add(Duration(hours: 8));
+                    await dbref2.update(
+                      {
+                        "last_check_in":now_time.year.toString()+Change_to_2(now_time.month.toString())+Change_to_2(now_time.day.toString())+Change_to_2(now_time.hour.toString())+Change_to_2(now_time.minute.toString())+Change_to_2(now_time.second.toString())
+                      }
+                    );
+                    check_in_state=0;
+                    print("check_in_state=${check_in_state}");
+                  }else{
+                    print("You can't check in");
+                    day_error(context);
+                  }
+                  
+                },style:  ElevatedButton.styleFrom(
+                    backgroundColor: check_in_state==0? Colors.grey:Colors.green,
+                    textStyle: TextStyle(color: Colors.black)
+                  )
+                ),
+              ],
+            ),
           ),
       );
   }

@@ -8,13 +8,13 @@ import 'package:provider/provider.dart';
 import 'main.dart';
 import 'team_nba.dart';
 
-class MainPage extends StatefulWidget{
+class MainPage_MLB extends StatefulWidget{
   // MainPage(){
   //   print("MainPage Creator");
   // }
   // String title="My Casino";
   // int sort_way=0;
-  _MainPage MainPage_state=_MainPage();
+  _MainPage_MLB MainPage_state=_MainPage_MLB();
 
   void trans_refresh(){
       MainPage_state.refresh();
@@ -26,14 +26,14 @@ class MainPage extends StatefulWidget{
     MainPage_state.lets_sorting(value);
   }
     @override
-    State<MainPage> createState(){
+    State<MainPage_MLB> createState(){
       // print("create Stating");
-      MainPage_state=new _MainPage();
+      MainPage_state=new _MainPage_MLB();
       return MainPage_state;
     }
 }
 
-class _MainPage extends State<MainPage> {
+class _MainPage_MLB extends State<MainPage_MLB> {
 
   int temp=0;
   int state_sorting_way=0;
@@ -73,7 +73,7 @@ class _MainPage extends State<MainPage> {
   }
 
   void initial_array() async{ //not synchronic
-    DatabaseReference dbref= await FirebaseDatabase.instance.ref("Gambling/");
+    DatabaseReference dbref= await FirebaseDatabase.instance.ref("Gambling_MLB/");
     final snap=await dbref.get();
     if(snap.exists){
       show_nothing=0;
@@ -99,8 +99,8 @@ class _MainPage extends State<MainPage> {
       }
       
     }else{
-        show_nothing=1;
         print("I don't get it");
+        show_nothing=1;
         setState(() {
           
         });
@@ -192,7 +192,8 @@ class _MainPage extends State<MainPage> {
     @override
   Widget build(BuildContext context) {
       // print("state: build");
-      return Center(
+      print("show_nothing=${show_nothing}");
+      return  Center(
         child: show_nothing==0? ListView.builder( itemCount: game_array.length,itemBuilder: (context, index) {
             // print("status="+game_array[index].status.toString());
             if(index==0){
@@ -312,7 +313,7 @@ class _MainPage extends State<MainPage> {
             //   ],
             // );
             // }
-         }): Text("目前沒有比賽喔")
+         }) : Text("目前沒有比賽喔")
       );
      
   }

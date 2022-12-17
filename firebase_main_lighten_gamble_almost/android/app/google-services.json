@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "202052669324",
+    "firebase_url": "https://firenation-20647-default-rtdb.firebaseio.com",
     "project_id": "firenation-20647",
     "storage_bucket": "firenation-20647.appspot.com"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "202052669324-6a8u33ho5unhmjv7i6l7evpc1il5b235.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.firebase",
+            "certificate_hash": "592977c8e2b2dae087105fc14ae8eaf5968d407e"
+          }
+        },
         {
           "client_id": "202052669324-vj6jamr2gvad6f4ocvsmho6oe1qt5qn2.apps.googleusercontent.com",
           "client_type": 3
